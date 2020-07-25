@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TritonExpress.Models
@@ -20,6 +21,8 @@ namespace TritonExpress.Models
 
         [Required]
         public bool IsDeleted { get; set; }
+
+        public IEnumerable<Branches> Branches { get; set; }
 
     }
 }

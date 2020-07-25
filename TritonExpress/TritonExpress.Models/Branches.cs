@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace TritonExpress.Models
 {
     [Table("Departments")]
-    public class Department
+    public class Branches
     {
         [Required]
         [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -27,5 +27,8 @@ namespace TritonExpress.Models
 
         [Required]
         public bool IsActive { get; set; }
+
+        [ForeignKey("Provinces")]
+        public int ProvincesId { get; set; }
     }
 }

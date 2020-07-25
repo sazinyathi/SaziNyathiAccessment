@@ -5,8 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Services\" />
-    <Folder Include="Repositories\" />
+    <ProjectReference Include="..\TritonExpress.Models\TritonExpress.Models.csproj" />
   </ItemGroup>
 
 </Project>
