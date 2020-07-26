@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,9 +20,18 @@ namespace TritonExpress.Controllers
         }
 
         // GET: Branches
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString)
         {
-            return View(await _context.Branches.ToListAsync());
+            var branches = await _context.Branches.ToListAsync();
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                branches = branches.Where(
+                      s => s.BranchName.ToLower().Contains(searchString.ToLower())
+                   || s.Address.ToLower().Contains(searchString.ToLower())
+                   || s.BranchDescription.ToLower().Contains(searchString.ToLower())
+                   ).ToList();
+            }
+            return View(branches);
         }
 
         // GET: Branches/Details/5
@@ -58,15 +68,24 @@ namespace TritonExpress.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,BranchName,BranchDescription,Address,IsDeleted,IsActive,ProvincesId")] Branches branches)
+        public async Task<IActionResult> Create([Bind("Id,BranchName,BranchDescription,Address,IsDeleted,IsActive,Province")] BranchesFormViewModel branchesFormViewModel)
         {
+            
             if (ModelState.IsValid)
             {
+                var branches = new Branches
+                {
+                     Address = branchesFormViewModel.Address,
+                     BranchDescription = branchesFormViewModel.BranchDescription,
+                     BranchName = branchesFormViewModel.BranchName,
+                     ProvincesId = branchesFormViewModel.Province,
+                     
+                };
                 _context.Add(branches);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(branches);
+            return View(branchesFormViewModel);
         }
 
         // GET: Branches/Edit/5
@@ -99,9 +118,9 @@ namespace TritonExpress.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,BranchName,BranchDescription,Address,IsDeleted,IsActive,ProvincesId")] Branches branches)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,BranchName,BranchDescription,Address,IsDeleted,IsActive,Province")] BranchesFormViewModel branchesFormViewModel)
         {
-            if (id != branches.Id)
+            if (id != branchesFormViewModel.Id)
             {
                 return NotFound();
             }
@@ -110,12 +129,22 @@ namespace TritonExpress.Controllers
             {
                 try
                 {
-                    _context.Update(branches);
+                    var branch = new Branches
+                    {
+                      Address = branchesFormViewModel.Address,
+                      BranchName  = branchesFormViewModel.BranchName,
+                      BranchDescription = branchesFormViewModel.BranchDescription,
+                      ProvincesId = branchesFormViewModel.Province,
+                      IsActive = branchesFormViewModel.IsActive,
+                      IsDeleted = branchesFormViewModel.IsDeleted
+                    };
+
+                    _context.Update(branch);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!BranchesExists(branches.Id))
+                    if (!BranchesExists(branchesFormViewModel.Id))
                     {
                         return NotFound();
                     }
@@ -126,7 +155,7 @@ namespace TritonExpress.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(branches);
+            return View(branchesFormViewModel);
         }
 
         // GET: Branches/Delete/5

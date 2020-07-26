@@ -8,7 +8,7 @@ namespace TritonExpress.Models
     public class Province
     {
         [Required]
-        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int Id { get; set; }
 
         [Required]
