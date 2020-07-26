@@ -35,5 +35,6 @@ namespace TritonExpress.Models
         [ForeignKey("VehicleType")]
         public int VehicleTypeId { get; set; }
 
+        public WayBills WayBills { get; set; }
     }
 }

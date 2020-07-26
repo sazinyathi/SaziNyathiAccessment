@@ -50,7 +50,7 @@ namespace TritonExpress.API.Controllers
             {
                 return BadRequest(ModelState);
             }
-            province.Id = id;
+            //province.Id = id;
             await provincesServices.UpdateProvinceAsync(province);
 
             return Ok();

@@ -36,7 +36,7 @@ namespace TritonExpress.Repositories
 
         public async Task<IEnumerable<Branches>> GetAllBranchesAsync()
         {
-            return await dbContext.Branches.AsNoTracking().ToListAsync();
+            return await dbContext.Branches.Include(x =>x.Vehicle).AsNoTracking().ToListAsync();
         }
 
         public async Task<Branches> GetBranchesIDAsync(int id)
@@ -56,7 +56,7 @@ namespace TritonExpress.Repositories
             eventEntity.IsDeleted = branches.IsDeleted;
             eventEntity.BranchName = branches.BranchName;
             eventEntity.IsActive = branches.IsActive;
-            eventEntity.IsDeleted = branches.IsActive;
+            eventEntity.IsDeleted = branches.IsDeleted;
             eventEntity.ProvincesId = branches.ProvincesId;
 
             dbContext.Update(eventEntity);

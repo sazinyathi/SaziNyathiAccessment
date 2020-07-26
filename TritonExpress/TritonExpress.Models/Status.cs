@@ -6,11 +6,10 @@ using System.Text;
 
 namespace TritonExpress.Models
 {
-    [Table("VehiclesType")]
-    public class VehicleType
+    [Table("Status")]
+    public class Status
     {
-        [Required]
-        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Key,DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         [Required]
@@ -19,10 +18,9 @@ namespace TritonExpress.Models
 
         [Required]
         [MaxLength(200)]
-        public string Descriptions { get; set; }
+        public string Description { get; set; }
 
-        [Required]
         public bool IsDeleted { get; set; }
-        public IEnumerable<Vehicle> Vehicle { get; set; }
+        public WayBills WayBills { get; set; }
     }
 }

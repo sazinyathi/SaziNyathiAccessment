@@ -1,8 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using PagedList;
 using TritonExpress.A;
 using TritonExpress.Models;
 using TritonExpress.ViewModels;
@@ -12,25 +19,41 @@ namespace TritonExpress.Controllers
     public class BranchesController : Controller
     {
         private readonly TritonExpressDbContex1t _context;
+        private IEnumerable<Branches> branches = null;
+        private IEnumerable<Province> provinces = null;
+        private readonly IConfiguration configuration;
 
-
-        public BranchesController(TritonExpressDbContex1t context)
+        public BranchesController(TritonExpressDbContex1t context, IConfiguration configuration)
         {
             _context = context;
+            this.configuration = configuration;
         }
 
         // GET: Branches
         public async Task<IActionResult> Index(string searchString)
         {
-            var branches = await _context.Branches.ToListAsync();
-            if (!String.IsNullOrEmpty(searchString))
+            var uriString = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Branches");
+            
+            using (var client = new HttpClient())
             {
-                branches = branches.Where(
-                      s => s.BranchName.ToLower().Contains(searchString.ToLower())
-                   || s.Address.ToLower().Contains(searchString.ToLower())
-                   || s.BranchDescription.ToLower().Contains(searchString.ToLower())
-                   ).ToList();
+                HttpResponseMessage response = await client.GetAsync(uriString);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    return View();
+                }
+                branches = response.Content.ReadAsAsync<IList<Branches>>().Result;
+             
+                if (!String.IsNullOrEmpty(searchString))
+                {
+                    branches = branches.Where(
+                       s => s.BranchName.ToLower().Contains(searchString.ToLower())
+                    || s.Address.ToLower().Contains(searchString.ToLower())
+                    || s.BranchDescription.ToLower().Contains(searchString.ToLower())
+                    ).ToList();
+                }
+
             }
+           
             return View(branches);
         }
 
@@ -42,22 +65,45 @@ namespace TritonExpress.Controllers
                 return NotFound();
             }
 
-            var branches = await _context.Branches
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (branches == null)
+            var branches = new Branches();
+            var uriString = string.Format("{0}{1}{2}", configuration["TritonExpressEndopint"], "Branches/", id);
+            using (var client = new HttpClient())
             {
-                return NotFound();
+
+                HttpResponseMessage response = await client.GetAsync(uriString);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    //Log.Error(response.ReasonPhrase);
+                    //return default(TResult);
+                }
+                branches = await response.Content.ReadAsAsync<Branches>();
+
             }
+
 
             return View(branches);
         }
 
         // GET: Branches/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            var uriString = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Provinces");
+
+            using (var client = new HttpClient())
+            {
+                HttpResponseMessage response = await client.GetAsync(uriString);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    //Log.Error(response.ReasonPhrase);
+                    //return default(TResult);
+                }
+               provinces = response.Content.ReadAsAsync<IList<Province>>().Result;
+                
+
+            }
             var viewModel = new BranchesFormViewModel
             {
-                Provinces = _context.Provinces.ToList()
+                Provinces = provinces
             };
            
             return View(viewModel);
@@ -81,9 +127,22 @@ namespace TritonExpress.Controllers
                      ProvincesId = branchesFormViewModel.Province,
                      
                 };
-                _context.Add(branches);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                
+                var uriString = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Branches/");
+                string jsonString = JsonSerializer.Serialize(branches);
+                using (var client = new HttpClient())
+                {
+                    var httpContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
+                    HttpResponseMessage response = await client.PostAsync(uriString, httpContent);
+                    if (response.StatusCode != HttpStatusCode.OK)
+                    {
+                        //Log.Error(response.ReasonPhrase);
+                        //return default(TResult);
+                    }
+                    
+                    return RedirectToAction(nameof(Index));
+                }
+
             }
             return View(branchesFormViewModel);
         }
@@ -96,10 +155,19 @@ namespace TritonExpress.Controllers
                 return NotFound();
             }
 
-            var branches = await _context.Branches.FindAsync(id);
-            if (branches == null)
+            var branches = new Branches();
+            var uriString = string.Format("{0}{1}{2}", configuration["TritonExpressEndopint"], "Branches/", id);
+            using (var client = new HttpClient())
             {
-                return NotFound();
+
+                HttpResponseMessage response = await client.GetAsync(uriString);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    //Log.Error(response.ReasonPhrase);
+                    //return default(TResult);
+                }
+                branches = await response.Content.ReadAsAsync<Branches>();
+
             }
             var viewModel = new BranchesFormViewModel
             {

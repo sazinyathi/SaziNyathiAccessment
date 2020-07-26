@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using TritonExpress.Interfaces.Services;
 using TritonExpress.Models;
@@ -73,7 +69,7 @@ namespace TritonExpress.API.Controllers
 
         // DELETE: api/ApiWithActions/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAsync(int id)
+        public async Task<IActionResult> DeleteBranchAsync(int id)
         {
             if (!ModelState.IsValid)
             {
