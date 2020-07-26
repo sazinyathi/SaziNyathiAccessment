@@ -44,20 +44,20 @@ namespace TritonExpress.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutProvince([FromRoute] int id, [FromBody] Province updatedEvent)
+        public async Task<IActionResult> PutProvinceAsync([FromRoute] int id, [FromBody] Province province)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            updatedEvent.Id = id;
-            await provincesServices.UpdateProvinceAsync(updatedEvent);
+            province.Id = id;
+            await provincesServices.UpdateProvinceAsync(province);
 
             return Ok();
         }
 
         [HttpPost]
-        public async Task<IActionResult> PostProvince([FromBody] Province province)
+        public async Task<IActionResult> PostProvinceAsync([FromBody] Province province)
         {
             if (!ModelState.IsValid)
             {
@@ -65,11 +65,11 @@ namespace TritonExpress.API.Controllers
             }
 
             var _id = await provincesServices.CreateProvinceAsync(province);
-            return CreatedAtAction("GetEvent", new { id = _id }, province);
+            return CreatedAtAction("GetProvince", new { id = _id }, province);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProvince([FromRoute] int id)
+        public async Task<IActionResult> DeleteProvinceAsync([FromRoute] int id)
         {
             if (!ModelState.IsValid)
             {

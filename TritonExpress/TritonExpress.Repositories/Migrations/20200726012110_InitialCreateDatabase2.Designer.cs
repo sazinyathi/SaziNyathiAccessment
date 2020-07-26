@@ -10,8 +10,8 @@ using TritonExpress.Repositories;
 namespace TritonExpress.Repositories.Migrations
 {
     [DbContext(typeof(TritonExpressDbContext))]
-    [Migration("20200725131825_InitialCreatedatabase")]
-    partial class InitialCreatedatabase
+    [Migration("20200726012110_InitialCreateDatabase2")]
+    partial class InitialCreateDatabase2
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -24,22 +24,24 @@ namespace TritonExpress.Repositories.Migrations
             modelBuilder.Entity("TritonExpress.Models.Branches", b =>
                 {
                     b.Property<int>("Id")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Address")
                         .IsRequired()
                         .HasColumnType("nvarchar(200)")
                         .HasMaxLength(200);
 
-                    b.Property<string>("DepartmentName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(50)")
-                        .HasMaxLength(50);
-
-                    b.Property<string>("Description")
+                    b.Property<string>("BranchDescription")
                         .IsRequired()
                         .HasColumnType("nvarchar(200)")
                         .HasMaxLength(200);
+
+                    b.Property<string>("BranchName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(50)")
+                        .HasMaxLength(50);
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -57,13 +59,15 @@ namespace TritonExpress.Repositories.Migrations
 
                     b.HasIndex("ProvinceId");
 
-                    b.ToTable("Departments");
+                    b.ToTable("Branches");
                 });
 
             modelBuilder.Entity("TritonExpress.Models.Province", b =>
                 {
                     b.Property<int>("Id")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Description")
                         .IsRequired()

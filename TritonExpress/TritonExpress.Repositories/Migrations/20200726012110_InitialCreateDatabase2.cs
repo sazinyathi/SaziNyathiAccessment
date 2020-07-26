@@ -2,7 +2,7 @@
 
 namespace TritonExpress.Repositories.Migrations
 {
-    public partial class InitialCreatedatabase : Migration
+    public partial class InitialCreateDatabase2 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -10,7 +10,8 @@ namespace TritonExpress.Repositories.Migrations
                 name: "Provinces",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false),
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(maxLength: 100, nullable: false),
                     Description = table.Column<string>(maxLength: 200, nullable: false),
                     IsDeleted = table.Column<bool>(nullable: false)
@@ -21,12 +22,13 @@ namespace TritonExpress.Repositories.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Departments",
+                name: "Branches",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false),
-                    DepartmentName = table.Column<string>(maxLength: 50, nullable: false),
-                    Description = table.Column<string>(maxLength: 200, nullable: false),
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    BranchName = table.Column<string>(maxLength: 50, nullable: false),
+                    BranchDescription = table.Column<string>(maxLength: 200, nullable: false),
                     Address = table.Column<string>(maxLength: 200, nullable: false),
                     IsDeleted = table.Column<bool>(nullable: false),
                     IsActive = table.Column<bool>(nullable: false),
@@ -35,9 +37,9 @@ namespace TritonExpress.Repositories.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Departments", x => x.Id);
+                    table.PrimaryKey("PK_Branches", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Departments_Provinces_ProvinceId",
+                        name: "FK_Branches_Provinces_ProvinceId",
                         column: x => x.ProvinceId,
                         principalTable: "Provinces",
                         principalColumn: "Id",
@@ -45,15 +47,15 @@ namespace TritonExpress.Repositories.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Departments_ProvinceId",
-                table: "Departments",
+                name: "IX_Branches_ProvinceId",
+                table: "Branches",
                 column: "ProvinceId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Departments");
+                name: "Branches");
 
             migrationBuilder.DropTable(
                 name: "Provinces");

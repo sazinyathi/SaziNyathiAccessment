@@ -3,20 +3,20 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TritonExpress.Models
 {
-    [Table("Departments")]
+    [Table("Branches")]
     public class Branches
     {
         [Required]
-        [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [Key,DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         [Required]
         [MaxLength(50)]
-        public string DepartmentName { get; set; }
+        public string BranchName { get; set; }
 
         [Required]
         [MaxLength(200)]
-        public string Description { get; set; }
+        public string BranchDescription { get; set; }
 
         [Required]
         [MaxLength(200)]

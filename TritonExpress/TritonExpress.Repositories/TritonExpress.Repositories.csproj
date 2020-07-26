@@ -5,8 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Migrations\20200725165044_PopulateProvinceTable.cs" />
-    <Compile Remove="Migrations\20200725165044_PopulateProvinceTable.Designer.cs" />
+    <Compile Remove="Migrations\20200726011710_CreateDatabase.cs" />
+    <Compile Remove="Migrations\20200726011710_CreateDatabase.Designer.cs" />
+    <Compile Remove="Migrations\20200726011935_InitialCreateDatabase.cs" />
+    <Compile Remove="Migrations\20200726011935_InitialCreateDatabase.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,6 +32,10 @@
   <ItemGroup>
     <ProjectReference Include="..\TritonExpress.Interfaces\TritonExpress.Interfaces.csproj" />
     <ProjectReference Include="..\TritonExpress.Models\TritonExpress.Models.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Migrations\" />
   </ItemGroup>
 
 </Project>
