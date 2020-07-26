@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TritonExpress.Models
@@ -30,5 +31,7 @@ namespace TritonExpress.Models
 
         [ForeignKey("Provinces")]
         public int ProvincesId { get; set; }
+
+        public IEnumerable<Vehicle> Vehicle { get; set; }
     }
 }

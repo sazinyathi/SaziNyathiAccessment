@@ -43,18 +43,19 @@ namespace TritonExpress.Repositories
             return await dbContext.Provinces.AsNoTracking().Where(x => x.Id == id).FirstOrDefaultAsync();
         }
 
-        public async Task UpdateProvinceAsync(Province updatedEvent)
+        public async Task UpdateProvinceAsync(Province province)
         {
-            var eventEntity = await dbContext.Provinces.FirstOrDefaultAsync(a => a.Id == updatedEvent.Id);
+            var eventEntity = await dbContext.Provinces.FirstOrDefaultAsync(a => a.Id == province.Id);
             if (eventEntity == null || eventEntity == default)
             {
-                throw new KeyNotFoundException($"Id of '{updatedEvent.Id}' was not found!");
+                throw new KeyNotFoundException($"Id of '{province.Id}' was not found!");
             }
-            eventEntity.Branches = updatedEvent.Branches;
-            eventEntity.Description = updatedEvent.Description;
-            eventEntity.IsDeleted = updatedEvent.IsDeleted;
-            eventEntity.Name = updatedEvent.Name;
-         
+            eventEntity.Branches = province.Branches;
+            eventEntity.Description = province.Description;
+            eventEntity.IsDeleted = province.IsDeleted;
+            eventEntity.Name = province.Name;
+        
+
             dbContext.Update(eventEntity);
             await dbContext.SaveChangesAsync();
         }

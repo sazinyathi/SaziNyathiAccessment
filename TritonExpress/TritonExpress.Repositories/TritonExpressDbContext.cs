@@ -16,5 +16,8 @@ namespace TritonExpress.Repositories
 
         public DbSet<Branches> Branches { get; set; }
         public DbSet<Province> Provinces { get; set; }
+        public DbSet<Vehicle> Vechicles { get; set; }
+
+        public DbSet<VehicleType> VehicleType { get; set; }
     }
 }
