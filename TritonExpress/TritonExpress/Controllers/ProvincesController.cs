@@ -7,22 +7,18 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using TritonExpress.A;
 using TritonExpress.Models;
 
 namespace TritonExpress.Controllers
 {
     public class ProvincesController : Controller
     {
-        private readonly TritonExpressDbContex1t _context;
+       
         private readonly IConfiguration configuration;
         private IEnumerable<Province> provinces = null;
-        public ProvincesController(TritonExpressDbContex1t context, IConfiguration configuration)
+        public ProvincesController( IConfiguration configuration)
         {
-            _context = context;
             this.configuration = configuration;
         }
 
@@ -189,6 +185,7 @@ namespace TritonExpress.Controllers
                     ViewBag.Error = "Error : " + response.StatusCode;
                     return View();
                 }
+                province = response.Content.ReadAsAsync<Province>().Result;
             }
             if (province == null)
             {
@@ -204,7 +201,7 @@ namespace TritonExpress.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var uriString = string.Format("{0}{1}{2}", configuration["TritonExpressEndopint"], "Provinces/", id);
-            var province = new Province();
+          
             using (var client = new HttpClient())
             {
 
@@ -218,9 +215,6 @@ namespace TritonExpress.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ProvinceExists(int id)
-        {
-            return _context.Provinces.Any(e => e.Id == id);
-        }
+        
     }
 }
