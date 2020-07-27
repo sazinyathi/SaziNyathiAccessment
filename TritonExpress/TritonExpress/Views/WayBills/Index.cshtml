@@ -1,23 +1,33 @@
-﻿@model IEnumerable<TritonExpress.ViewModels.WayBillsFormViewModel>
+﻿@model IEnumerable<TritonExpress.ViewModels.WayBillsViewModel>
 
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Index</h1>
+<h4>WayBills</h4>
 
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+@using (Html.BeginForm())
+{
+    <p>
+        Find by name: @Html.TextBox("SearchString")
+        <input type="submit" value="Search" />
+    </p>
+}
 <table class="table table-bordered">
     <thead>
         <tr>
             <th>
-                Vehicle  Name
+                @Html.DisplayNameFor(model => model.CarName)
             </th>
             <th>
-                Registration Number
+                @Html.DisplayNameFor(model => model.RegistrationNumber)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Status)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Weight)
@@ -25,25 +35,30 @@
             <th>
                 @Html.DisplayNameFor(model => model.Quantity)
             </th>
-            <th>
 
-            </th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Vehicle)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Weight)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Quantity)
-            </td>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CarName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.RegistrationNumber)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Status)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Weight)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Quantity)
+                </td>
 
-        </tr>
-}
+            </tr>
+        }
     </tbody>
 </table>

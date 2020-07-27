@@ -29,9 +29,13 @@ namespace TritonExpress.Controllers
         {
 
             var uriString = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "WayBills");
+            var _status = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Status");
+            var _vehicles = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Vehicles");
+            var wayBillsViewModel = new List<WayBillsViewModel>();
 
             using (var client = new HttpClient())
             {
+
                 HttpResponseMessage response = await client.GetAsync(uriString);
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
@@ -39,190 +43,123 @@ namespace TritonExpress.Controllers
                     return View();
                 }
                 var readJob = response.Content.ReadAsAsync<IList<WayBills>>();
-                wayBills = readJob.Result;
-                if (!String.IsNullOrEmpty(searchString))
+
+                foreach (var item in readJob.Result)
                 {
-                    wayBills = readJob.Result.Where(
-                        s => s.Weight.ToLower().Contains(searchString.ToLower())
-                       //|| s.Quantity.ToLower().Contains(searchString.ToLower())
-                       //|| s..ToLower().Contains(searchString.ToLower())
-                       );
-                }
-
-            }
-            return View(wayBills);
-        }
-
-        // GET: WayBills/Details/5
-        //public async Task<IActionResult> Details(int? id)
-        //{
-        //    if (id == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    var wayBills = await _context.WayBills
-        //        .FirstOrDefaultAsync(m => m.Id == id);
-        //    if (wayBills == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return View(wayBills);
-        //}
-
-        // GET: WayBills/Create
-        public async Task<IActionResult> Create()
-        {
-            var uriString = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Status");
-
-            using (var client = new HttpClient())
-            {
-                HttpResponseMessage response = await client.GetAsync(uriString);
-                if (response.StatusCode != HttpStatusCode.OK)
-                {
-                    ViewBag.Error = "Error : " + response.StatusCode;
-                    return View();
-                }
-                statuses = response.Content.ReadAsAsync<IList<Status>>().Result;
-            }
-
-            var _vehicleTypes = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Vehicles");
-
-            using (var client = new HttpClient())
-            {
-                HttpResponseMessage response = await client.GetAsync(_vehicleTypes);
-                if (response.StatusCode != HttpStatusCode.OK)
-                {
-                    ViewBag.Error = "Error : " + response.StatusCode;
-                    return View();
-                }
-                vehicles = response.Content.ReadAsAsync<IList<Vehicle>>().Result;
-            }
-            var vayBillsFormViewModel = new WayBillsFormViewModel
-            {
-               Statuses  = statuses,
-               Vehicles  = vehicles
-            };
-            return View(vayBillsFormViewModel);
-        }
-
-        // POST: WayBills/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Weight,Quantity,Status,Vehicle")] WayBillsFormViewModel wayBillsFormViewModel)
-        {
-            if (ModelState.IsValid)
-            {
-                var wayBills = new WayBills
-                {
-                  Quantity = wayBillsFormViewModel.Quantity,
-                  StatusId = wayBillsFormViewModel.Status,
-                  VehicleId = wayBillsFormViewModel.Vehicle,
-                  Weight  = wayBillsFormViewModel.Weight
-                };
-                var uriString = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "WayBills");
-                string jsonString = JsonSerializer.Serialize(wayBills);
-                using (var client = new HttpClient())
-                {
-                    var httpContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
-                    HttpResponseMessage response = await client.PostAsync(uriString, httpContent);
-                    if (response.StatusCode != HttpStatusCode.OK)
+                    HttpResponseMessage responseStatus = await client.GetAsync(string.Format("{0}{1}", _status, "/" + item.StatusId));
+                    var status = responseStatus.Content.ReadAsAsync<Status>().Result;
+                    HttpResponseMessage responseVehicle = await client.GetAsync(string.Format("{0}{1}", _vehicles, "/" + item.VehicleId));
+                    var vehicle = responseVehicle.Content.ReadAsAsync<Vehicle>().Result;
+                    var war = new WayBillsViewModel
                     {
-                        ViewBag.Error = "Error : " + response.StatusCode;
-                        return View(wayBillsFormViewModel);
-                    }
-                    return RedirectToAction(nameof(Index));
-                }
+                        Quantity = item.Quantity,
+                        Weight = item.Weight,
+                        RegistrationNumber = vehicle.RegistrationNumber,
+                        Status = status.Name,
+                        CarName = vehicle.Name
+                    };
+
+                wayBillsViewModel.Add(war);
             }
-            return View(wayBillsFormViewModel);
+
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                    wayBillsViewModel = wayBillsViewModel.Where(s => s.Weight.ToLower().Contains(searchString.ToLower())
+                       || s.RegistrationNumber.ToLower().Contains(searchString.ToLower())
+                       || s.CarName.ToLower().Contains(searchString.ToLower())
+                       || s.Status.ToLower().Contains(searchString.ToLower())
+                       || s.Quantity.ToString().ToLower().Contains(searchString.ToLower())
+                       ).ToList();
+                }
+
+        }
+            return View(wayBillsViewModel);
+    }
+
+
+    public async Task<IActionResult> Create()
+    {
+        var uriString = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Status");
+
+        using (var client = new HttpClient())
+        {
+            HttpResponseMessage response = await client.GetAsync(uriString);
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                ViewBag.Error = "Error : " + response.StatusCode;
+                return View();
+            }
+            statuses = response.Content.ReadAsAsync<IList<Status>>().Result;
         }
 
-        //// GET: WayBills/Edit/5
-        //public async Task<IActionResult> Edit(int? id)
-        //{
-        //    if (id == null)
-        //    {
-        //        return NotFound();
-        //    }
+        var _vehicleTypes = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Vehicles");
 
-        //    var wayBills = await _context.WayBills.FindAsync(id);
-        //    if (wayBills == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    return View(wayBills);
-        //}
-
-        //// POST: WayBills/Edit/5
-        //// To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        //// more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Edit(int id, [Bind("Id,Weight,Quantity,StatusId,VehicleId")] WayBills wayBills)
-        //{
-        //    if (id != wayBills.Id)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    if (ModelState.IsValid)
-        //    {
-        //        try
-        //        {
-        //            _context.Update(wayBills);
-        //            await _context.SaveChangesAsync();
-        //        }
-        //        catch (DbUpdateConcurrencyException)
-        //        {
-        //            if (!WayBillsExists(wayBills.Id))
-        //            {
-        //                return NotFound();
-        //            }
-        //            else
-        //            {
-        //                throw;
-        //            }
-        //        }
-        //        return RedirectToAction(nameof(Index));
-        //    }
-        //    return View(wayBills);
-        //}
-
-        //// GET: WayBills/Delete/5
-        //public async Task<IActionResult> Delete(int? id)
-        //{
-        //    if (id == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    var wayBills = await _context.WayBills
-        //        .FirstOrDefaultAsync(m => m.Id == id);
-        //    if (wayBills == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return View(wayBills);
-        //}
-
-        //// POST: WayBills/Delete/5
-        //[HttpPost, ActionName("Delete")]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> DeleteConfirmed(int id)
-        //{
-        //    var wayBills = await _context.WayBills.FindAsync(id);
-        //    _context.WayBills.Remove(wayBills);
-        //    await _context.SaveChangesAsync();
-        //    return RedirectToAction(nameof(Index));
-        //}
-
-        //private bool WayBillsExists(int id)
-        //{
-        //    return _context.WayBills.Any(e => e.Id == id);
-        //}
+        using (var client = new HttpClient())
+        {
+            HttpResponseMessage response = await client.GetAsync(_vehicleTypes);
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                ViewBag.Error = "Error : " + response.StatusCode;
+                return View();
+            }
+            vehicles = response.Content.ReadAsAsync<IList<Vehicle>>().Result;
+        }
+        var vayBillsFormViewModel = new WayBillsFormViewModel
+        {
+            Statuses = statuses,
+            Vehicles = vehicles
+        };
+        return View(vayBillsFormViewModel);
     }
+
+    // POST: WayBills/Create
+    // To protect from overposting attacks, enable the specific properties you want to bind to, for 
+    // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create([Bind("Id,Weight,Quantity,Status,Vehicle")] WayBillsFormViewModel wayBillsFormViewModel)
+    {
+        if (ModelState.IsValid)
+        {
+            var wayBills = new WayBills
+            {
+                Quantity = wayBillsFormViewModel.Quantity,
+                StatusId = wayBillsFormViewModel.Status,
+                VehicleId = wayBillsFormViewModel.Vehicle,
+                Weight = wayBillsFormViewModel.Weight
+            };
+            var uriString = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "WayBills");
+            string jsonString = JsonSerializer.Serialize(wayBills);
+            using (var client = new HttpClient())
+            {
+                var httpContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await client.PostAsync(uriString, httpContent);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    ViewBag.Error = "Error : " + response.StatusCode;
+                     var uriStatus = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Status");
+                     HttpResponseMessage response1 = await client.GetAsync(uriStatus);
+                        
+                     statuses = response1.Content.ReadAsAsync<IList<Status>>().Result;
+                     var _vehicleTypes = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Vehicles");
+
+                      HttpResponseMessage response3 = await client.GetAsync(_vehicleTypes); 
+                       vehicles = response3.Content.ReadAsAsync<IList<Vehicle>>().Result;
+                        var vayBillsFormViewModel = new WayBillsFormViewModel
+                        {
+                            Statuses = statuses,
+                            Vehicles = vehicles
+                        };
+                        return View(vayBillsFormViewModel);
+                    }
+                       
+                }
+                return RedirectToAction(nameof(Index));
+            }
+        
+        return View(wayBillsFormViewModel);
+    }
+
+    
+}
 }

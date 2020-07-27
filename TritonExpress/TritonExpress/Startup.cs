@@ -36,8 +36,10 @@ namespace TritonExpress
         {
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
+
+                //app.UseDeveloperExceptionPage();
+                //app.UseDatabaseErrorPage();
+                app.UseExceptionHandler("/Home/Error");
             }
             else
             {

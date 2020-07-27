@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using TritonExpress.Interfaces.Services;
 using TritonExpress.Models;
@@ -52,7 +51,7 @@ namespace TritonExpress.API.Controllers
             }
 
             var _id = await statusService.CreateStatusAsync(status);
-            return CreatedAtAction("GetStatus", new { id = _id }, status);
+            return Ok();
         }
 
         // PUT: api/Status/5
