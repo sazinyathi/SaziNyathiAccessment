@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -28,8 +29,8 @@ namespace TritonExpress.Controllers
         // GET: Provinces
         public async Task<IActionResult> Index(string searchString)
         {
-            
-            var uriString = string.Format("{0}{1}", configuration["TritonExpressEndopint"],"Provinces");
+
+            var uriString = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Provinces");
 
             using (var client = new HttpClient())
             {
@@ -39,15 +40,15 @@ namespace TritonExpress.Controllers
                     ViewBag.Error = "Error : " + response.StatusCode;
                     return View();
                 }
-                    var readJob = response.Content.ReadAsAsync<IList<Province>>();
-                    provinces = readJob.Result;
-                    if (!String.IsNullOrEmpty(searchString))
-                    {
-                        provinces = readJob.Result.Where(
-                            s => s.Name.ToLower().Contains(searchString.ToLower())
-                           || s.Description.ToLower().Contains(searchString.ToLower()));
-                    }
-             
+                var readJob = response.Content.ReadAsAsync<IList<Province>>();
+                provinces = readJob.Result;
+                if (!String.IsNullOrEmpty(searchString))
+                {
+                    provinces = readJob.Result.Where(
+                        s => s.Name.ToLower().Contains(searchString.ToLower())
+                       || s.Description.ToLower().Contains(searchString.ToLower()));
+                }
+
             }
             return View(provinces);
         }
@@ -55,13 +56,13 @@ namespace TritonExpress.Controllers
         // GET: Provinces/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-           
+
             if (id == null)
             {
                 return NotFound();
             }
             var province = new Province();
-            var uriString = string.Format("{0}{1}{2}", configuration["TritonExpressEndopint"], "Provinces/",id);
+            var uriString = string.Format("{0}{1}{2}", configuration["TritonExpressEndopint"], "Provinces/", id);
             using (var client = new HttpClient())
             {
 
@@ -72,9 +73,9 @@ namespace TritonExpress.Controllers
                     return View();
                 }
                 province = await response.Content.ReadAsAsync<Province>();
-                
+
             }
-            
+
 
             return View(province);
         }
@@ -94,18 +95,20 @@ namespace TritonExpress.Controllers
         {
             if (ModelState.IsValid)
             {
-                var uriString = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Provinces/");
+                var uriString = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Provinces");
+                string jsonString = JsonSerializer.Serialize(province);
                 using (var client = new HttpClient())
                 {
-                    var httpContent = new StringContent(province.ToString(), Encoding.UTF8, "application/json");
+                    var httpContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
                     HttpResponseMessage response = await client.PostAsync(uriString, httpContent);
                     if (response.StatusCode != HttpStatusCode.OK)
                     {
-                        ViewBag.Error = "Error : "+ response.StatusCode;
+                        ViewBag.Error = "Error : " + response.StatusCode;
                         return View();
                     }
+                    return RedirectToAction(nameof(Index));
                 }
-                
+
             }
             return View(province);
         }
@@ -125,12 +128,12 @@ namespace TritonExpress.Controllers
                 HttpResponseMessage response = await client.GetAsync(uriString);
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
-                  ViewBag.Error = "Error : " + response.StatusCode;
-                  return View();
+                    ViewBag.Error = "Error : " + response.StatusCode;
+                    return View();
                 }
                 province = await response.Content.ReadAsAsync<Province>();
             }
-         
+
             return View(province);
         }
 
@@ -148,22 +151,20 @@ namespace TritonExpress.Controllers
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(province);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ProvinceExists(province.Id))
+              
+                    var uriString = string.Format("{0}{1}{2}", configuration["TritonExpressEndopint"], "Provinces/", id);
+                    string jsonString = JsonSerializer.Serialize(province);
+                    using (var client = new HttpClient())
                     {
-                        return NotFound();
+                        var httpContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
+                        HttpResponseMessage response = await client.PutAsync(uriString, httpContent);
+                        if (response.StatusCode != HttpStatusCode.OK)
+                        {
+                            ViewBag.Error = "Error : " + response.StatusCode;
+                            return View();
+                        }
                     }
-                    else
-                    {
-                        throw;
-                    }
-                }
+         
                 return RedirectToAction(nameof(Index));
             }
             return View(province);
@@ -177,8 +178,18 @@ namespace TritonExpress.Controllers
                 return NotFound();
             }
 
-            var province = await _context.Provinces
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var uriString = string.Format("{0}{1}{2}", configuration["TritonExpressEndopint"], "Provinces/", id);
+            var province = new Province();
+            using (var client = new HttpClient())
+            {
+
+                HttpResponseMessage response = await client.DeleteAsync(uriString);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    ViewBag.Error = "Error : " + response.StatusCode;
+                    return View();
+                }
+            }
             if (province == null)
             {
                 return NotFound();
@@ -192,9 +203,18 @@ namespace TritonExpress.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var province = await _context.Provinces.FindAsync(id);
-            _context.Provinces.Remove(province);
-            await _context.SaveChangesAsync();
+            var uriString = string.Format("{0}{1}{2}", configuration["TritonExpressEndopint"], "Provinces/", id);
+            var province = new Province();
+            using (var client = new HttpClient())
+            {
+
+                HttpResponseMessage response = await client.DeleteAsync(uriString);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    ViewBag.Error = "Error : " + response.StatusCode;
+                    return View();
+                }
+            }
             return RedirectToAction(nameof(Index));
         }
 
