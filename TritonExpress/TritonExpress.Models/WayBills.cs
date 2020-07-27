@@ -10,10 +10,12 @@ namespace TritonExpress.Models
         [Key,DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        public DateTime RowCreateDate { get; set; }
+        [Required]
+        [MaxLength(200)]
+        public string Weight { get; set; }
 
-        [ForeignKey("Parcel")]
-        public int ParcelId { get; set; }
+        [Required]
+        public int Quantity { get; set; }
 
 
         [ForeignKey("Status")]

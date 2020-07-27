@@ -39,7 +39,7 @@ namespace TritonExpress.API.Controllers
             }
 
             var _id = await wayBillsService.CreateWayBillsAsync(wayBills);
-            return CreatedAtAction("GetBranch", new { id = _id }, wayBills);
+            return Ok();
         }
 
     

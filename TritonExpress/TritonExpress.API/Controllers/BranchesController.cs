@@ -50,7 +50,7 @@ namespace TritonExpress.API.Controllers
             }
 
             var _id = await branchesService.CreateBranchesAsync(branches);
-            return CreatedAtAction("GetBranch", new { id = _id }, branches);
+            return Ok();
         }
 
         // PUT: api/Branches/5

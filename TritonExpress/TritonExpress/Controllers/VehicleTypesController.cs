@@ -1,28 +1,54 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using TritonExpress.A;
+using Microsoft.Extensions.Configuration;
 using TritonExpress.Models;
 
 namespace TritonExpress.Controllers
 {
     public class VehicleTypesController : Controller
     {
-        private readonly TritonExpressDbContex1t _context;
+        private readonly IConfiguration configuration;
+        private IEnumerable<VehicleType>  vehicleTypes = null;
 
-        public VehicleTypesController(TritonExpressDbContex1t context)
+        public VehicleTypesController(IConfiguration configuration)
         {
-            _context = context;
+            this.configuration = configuration;
         }
 
         // GET: VehicleTypes
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString)
         {
-            return View(await _context.VehicleType.ToListAsync());
+            var uriString = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "VehicleTypes");
+
+            using (var client = new HttpClient())
+            {
+                HttpResponseMessage response = await client.GetAsync(uriString);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    ViewBag.Error = "Error : " + response.StatusCode;
+                    return View();
+                }
+                var readJob = response.Content.ReadAsAsync<IList<VehicleType>>();
+                vehicleTypes = readJob.Result;
+                if (!String.IsNullOrEmpty(searchString))
+                {
+                    vehicleTypes = readJob.Result.Where(
+                        s => s.Name.ToLower().Contains(searchString.ToLower())
+                       || s.Name.ToLower().Contains(searchString.ToLower())
+                       || s.Descriptions.ToLower().Contains(searchString.ToLower())
+                       );
+                }
+
+            }
+            return View(vehicleTypes);
         }
 
         // GET: VehicleTypes/Details/5
@@ -33,8 +59,20 @@ namespace TritonExpress.Controllers
                 return NotFound();
             }
 
-            var vehicleType = await _context.VehicleType
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var vehicleType = new VehicleType();
+            var uriString = string.Format("{0}{1}{2}", configuration["TritonExpressEndopint"], "VehicleTypes/", id);
+            using (var client = new HttpClient())
+            {
+
+                HttpResponseMessage response = await client.GetAsync(uriString);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    ViewBag.Error = "Error : " + response.StatusCode;
+                    return View();
+                }
+                vehicleType = await response.Content.ReadAsAsync<VehicleType>();
+
+            }
             if (vehicleType == null)
             {
                 return NotFound();
@@ -58,9 +96,19 @@ namespace TritonExpress.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(vehicleType);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                var uriString = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "VehicleTypes");
+                string jsonString = JsonSerializer.Serialize(vehicleType);
+                using (var client = new HttpClient())
+                {
+                    var httpContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
+                    HttpResponseMessage response = await client.PostAsync(uriString, httpContent);
+                    if (response.StatusCode != HttpStatusCode.OK)
+                    {
+                        ViewBag.Error = "Error : " + response.StatusCode;
+                        return View();
+                    }
+                    return RedirectToAction(nameof(Index));
+                }
             }
             return View(vehicleType);
         }
@@ -73,7 +121,19 @@ namespace TritonExpress.Controllers
                 return NotFound();
             }
 
-            var vehicleType = await _context.VehicleType.FindAsync(id);
+            var uriString = string.Format("{0}{1}{2}", configuration["TritonExpressEndopint"], "VehicleTypes/", id);
+            var vehicleType = new VehicleType();
+            using (var client = new HttpClient())
+            {
+
+                HttpResponseMessage response = await client.GetAsync(uriString);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    ViewBag.Error = "Error : " + response.StatusCode;
+                    return View();
+                }
+                vehicleType = response.Content.ReadAsAsync<VehicleType>().Result;
+            }
             if (vehicleType == null)
             {
                 return NotFound();
@@ -95,20 +155,16 @@ namespace TritonExpress.Controllers
 
             if (ModelState.IsValid)
             {
-                try
+                var uriString = string.Format("{0}{1}{2}", configuration["TritonExpressEndopint"], "VehicleTypes/", id);
+                string jsonString = JsonSerializer.Serialize(vehicleType);
+                using (var client = new HttpClient())
                 {
-                    _context.Update(vehicleType);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!VehicleTypeExists(vehicleType.Id))
+                    var httpContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
+                    HttpResponseMessage response = await client.PutAsync(uriString, httpContent);
+                    if (response.StatusCode != HttpStatusCode.OK)
                     {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
+                        ViewBag.Error = "Error : " + response.StatusCode;
+                        return View();
                     }
                 }
                 return RedirectToAction(nameof(Index));
@@ -124,8 +180,19 @@ namespace TritonExpress.Controllers
                 return NotFound();
             }
 
-            var vehicleType = await _context.VehicleType
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var uriString = string.Format("{0}{1}{2}", configuration["TritonExpressEndopint"], "VehicleTypes/", id);
+            var vehicleType = new VehicleType();
+            using (var client = new HttpClient())
+            {
+
+                HttpResponseMessage response = await client.DeleteAsync(uriString);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    ViewBag.Error = "Error : " + response.StatusCode;
+                    return View();
+                }
+                vehicleType = response.Content.ReadAsAsync<VehicleType>().Result;
+            }
             if (vehicleType == null)
             {
                 return NotFound();
@@ -139,15 +206,21 @@ namespace TritonExpress.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var vehicleType = await _context.VehicleType.FindAsync(id);
-            _context.VehicleType.Remove(vehicleType);
-            await _context.SaveChangesAsync();
+            var uriString = string.Format("{0}{1}{2}", configuration["TritonExpressEndopint"], "VehicleTypes/", id);
+
+            using (var client = new HttpClient())
+            {
+
+                HttpResponseMessage response = await client.DeleteAsync(uriString);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    ViewBag.Error = "Error : " + response.StatusCode;
+                    return View();
+                }
+            }
             return RedirectToAction(nameof(Index));
         }
 
-        private bool VehicleTypeExists(int id)
-        {
-            return _context.VehicleType.Any(e => e.Id == id);
-        }
+        
     }
 }

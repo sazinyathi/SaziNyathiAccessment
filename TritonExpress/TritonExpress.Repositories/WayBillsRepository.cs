@@ -6,7 +6,7 @@ using TritonExpress.Models;
 
 namespace TritonExpress.Repositories
 {
-    class WayBillsRepository : IWayBillsRepository
+    public class WayBillsRepository : IWayBillsRepository
     {
 
         private readonly TritonExpressDbContext dbContext;

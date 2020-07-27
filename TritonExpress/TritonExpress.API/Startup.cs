@@ -41,19 +41,19 @@ namespace TritonExpress.API
             #region Business Logic Injections
             services.AddTransient<IProvincesServices, ProvincesServices>();
             services.AddTransient<IBranchesService, BranchesService>();
-            services.AddTransient<IVehicleTypeRepository, VehicleTypeRepository>();
-            services.AddTransient<IStatusRepository, StatusRepository>();
+            services.AddTransient<IVehicleService, VehicleService>();
+            services.AddTransient<IStatusService, StatusService>();
             services.AddTransient<IVehicleTypeService, VehicleTypeService>();
-            services.AddTransient<IWayBillsRepository, WayBillsRepository>();
+            services.AddTransient<IWayBillsService, WayBillsService>();
             #endregion
 
             #region DAL Injections
             services.AddTransient<IProvincesRepository, ProvincesRepository>();
             services.AddTransient<IBranchesRepository, BranchesRepository>();
             services.AddTransient<IVehicleRepository, VehicleRepository>();
-            services.AddTransient<IVehicleTypeService, VehicleTypeService>();
-            services.AddTransient<IStatusService, StatusService>();
-            services.AddTransient<IWayBillsService, WayBillsService>();
+            services.AddTransient<IVehicleTypeRepository, VehicleTypeRepository>();
+            services.AddTransient<IStatusRepository, StatusRepository>();
+            services.AddTransient<IWayBillsRepository, WayBillsRepository>();
 
 
             #endregion

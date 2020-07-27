@@ -65,7 +65,7 @@ namespace TritonExpress.API.Controllers
             }
 
             var _id = await provincesServices.CreateProvinceAsync(province);
-            return CreatedAtAction("GetProvince", new { id = _id }, province);
+            return Ok();
         }
 
         [HttpDelete("{id}")]

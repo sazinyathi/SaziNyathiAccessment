@@ -1,28 +1,56 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using TritonExpress.A;
+using Microsoft.Extensions.Configuration;
 using TritonExpress.Models;
+using TritonExpress.ViewModels;
 
 namespace TritonExpress.Controllers
 {
     public class VehiclesController : Controller
     {
-        private readonly TritonExpressDbContex1t _context;
-
-        public VehiclesController(TritonExpressDbContex1t context)
+        private readonly IConfiguration configuration;
+        private IEnumerable<Vehicle> vehicles = null;
+        private IEnumerable<Branches> branches = null;
+        private IEnumerable<VehicleType> vehicleTypes = null;
+        public VehiclesController(IConfiguration configuration)
         {
-            _context = context;
+            this.configuration = configuration;
         }
+       
 
         // GET: Vehicles
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString)
         {
-            return View(await _context.Vechicles.ToListAsync());
+            var uriString = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Vehicles");
+
+            using (var client = new HttpClient())
+            {
+                HttpResponseMessage response = await client.GetAsync(uriString);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    ViewBag.Error = "Error : " + response.StatusCode;
+                    return View();
+                }
+                var readJob = response.Content.ReadAsAsync<IList<Vehicle>>();
+                vehicles = readJob.Result;
+                if (!String.IsNullOrEmpty(searchString))
+                {
+                    vehicles = readJob.Result.Where(
+                        s => s.Name.ToLower().Contains(searchString.ToLower())
+                       || s.Make.ToLower().Contains(searchString.ToLower())
+                       || s.Model.ToLower().Contains(searchString.ToLower())
+                       );
+                }
+
+            }
+            return View(vehicles);
         }
 
         // GET: Vehicles/Details/5
@@ -33,8 +61,20 @@ namespace TritonExpress.Controllers
                 return NotFound();
             }
 
-            var vehicle = await _context.Vechicles
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var vehicle = new Vehicle();
+            var uriString = string.Format("{0}{1}{2}", configuration["TritonExpressEndopint"], "Vehicles/", id);
+            using (var client = new HttpClient())
+            {
+
+                HttpResponseMessage response = await client.GetAsync(uriString);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    ViewBag.Error = "Error : " + response.StatusCode;
+                    return View();
+                }
+                vehicle = await response.Content.ReadAsAsync<Vehicle>();
+
+            }
             if (vehicle == null)
             {
                 return NotFound();
@@ -44,9 +84,43 @@ namespace TritonExpress.Controllers
         }
 
         // GET: Vehicles/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            return View();
+            var uriString = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Branches");
+
+            using (var client = new HttpClient())
+            {
+                HttpResponseMessage response = await client.GetAsync(uriString);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    ViewBag.Error = "Error : " + response.StatusCode;
+                    return View();
+                }
+                branches = response.Content.ReadAsAsync<IList<Branches>>().Result;
+            }
+
+            var _vehicleTypes = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "VehicleTypes");
+
+            using (var client = new HttpClient())
+            {
+                HttpResponseMessage response = await client.GetAsync(_vehicleTypes);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    ViewBag.Error = "Error : " + response.StatusCode;
+                    return View();
+                }
+                vehicleTypes = response.Content.ReadAsAsync<IList<VehicleType>>().Result;
+            }
+            var vehicleFormViewModel = new VehicleFormViewModel
+            {
+                
+                Branches  = branches,
+                VehicleTypes  = vehicleTypes
+
+            };
+
+
+            return View(vehicleFormViewModel);
         }
 
         // POST: Vehicles/Create
@@ -54,15 +128,34 @@ namespace TritonExpress.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Model,Make,RegistrationNumber,IsDeleted,BranchesId,VehicleTypeId")] Vehicle vehicle)
+        public async Task<IActionResult> Create([Bind("Id,Name,Model,Make,RegistrationNumber,IsDeleted,Branch,VehicleType")] VehicleFormViewModel vehicleFormViewModel)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(vehicle);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                var _vechicle = new Vehicle
+                {
+                  Make = vehicleFormViewModel.Make,
+                  Name = vehicleFormViewModel.Name,
+                  Model = vehicleFormViewModel.Model,
+                  BranchesId = vehicleFormViewModel.Branch,
+                  RegistrationNumber = vehicleFormViewModel.RegistrationNumber,
+                  VehicleTypeId = vehicleFormViewModel.VehicleType
+                };
+                var uriString = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Vehicles");
+                string jsonString = JsonSerializer.Serialize(_vechicle);
+                using (var client = new HttpClient())
+                {
+                    var httpContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
+                    HttpResponseMessage response = await client.PostAsync(uriString, httpContent);
+                    if (response.StatusCode != HttpStatusCode.OK)
+                    {
+                        ViewBag.Error = "Error : " + response.StatusCode;
+                        return View(vehicleFormViewModel);
+                    }
+                    return RedirectToAction(nameof(Index));
+                }
             }
-            return View(vehicle);
+            return View(vehicleFormViewModel);
         }
 
         // GET: Vehicles/Edit/5
@@ -73,12 +166,65 @@ namespace TritonExpress.Controllers
                 return NotFound();
             }
 
-            var vehicle = await _context.Vechicles.FindAsync(id);
+            var uriString = string.Format("{0}{1}{2}", configuration["TritonExpressEndopint"], "Vehicles/", id);
+            var vehicle = new Vehicle();
+            using (var client = new HttpClient())
+            {
+
+                HttpResponseMessage response = await client.GetAsync(uriString);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    ViewBag.Error = "Error : " + response.StatusCode;
+                    return View();
+                }
+                vehicle = response.Content.ReadAsAsync<Vehicle>().Result;
+            }
             if (vehicle == null)
             {
                 return NotFound();
             }
-            return View(vehicle);
+            var _branches = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Branches");
+
+            using (var client = new HttpClient())
+            {
+                HttpResponseMessage response = await client.GetAsync(_branches);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    ViewBag.Error = "Error : " + response.StatusCode;
+                    return View();
+                }
+                branches = response.Content.ReadAsAsync<IList<Branches>>().Result;
+            }
+
+            var _vehicleTypes = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "VehicleTypes");
+
+            using (var client = new HttpClient())
+            {
+                HttpResponseMessage response = await client.GetAsync(_vehicleTypes);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    ViewBag.Error = "Error : " + response.StatusCode;
+                    return View();
+                }
+                vehicleTypes = response.Content.ReadAsAsync<IList<VehicleType>>().Result;
+            }
+            var vehicleFormViewModel = new VehicleFormViewModel
+            {
+                Id = vehicle.Id,
+                Make = vehicle.Make,
+                IsDeleted = vehicle.IsDeleted,
+                Name = vehicle.Name,
+                Model = vehicle.Model,
+                Branch = vehicle.BranchesId,
+                RegistrationNumber = vehicle.RegistrationNumber,
+                VehicleType = vehicle.VehicleTypeId,
+                Branches = branches,
+                VehicleTypes = vehicleTypes
+
+            };
+            
+
+            return View(vehicleFormViewModel);
         }
 
         // POST: Vehicles/Edit/5
@@ -86,34 +232,39 @@ namespace TritonExpress.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Model,Make,RegistrationNumber,IsDeleted,BranchesId,VehicleTypeId")] Vehicle vehicle)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Model,Make,RegistrationNumber,IsDeleted,BranchesId,VehicleType")] VehicleFormViewModel vehicleFormViewModel)
         {
-            if (id != vehicle.Id)
+            if (id != vehicleFormViewModel.Id)
             {
                 return NotFound();
             }
 
             if (ModelState.IsValid)
             {
-                try
+                var uriString = string.Format("{0}{1}{2}", configuration["TritonExpressEndopint"], "Vehicles/", id);
+                var _vechicle = new Vehicle
                 {
-                    _context.Update(vehicle);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
+                    Make = vehicleFormViewModel.Make,
+                    Name = vehicleFormViewModel.Name,
+                    Model = vehicleFormViewModel.Model,
+                    BranchesId = vehicleFormViewModel.Branch,
+                    RegistrationNumber = vehicleFormViewModel.RegistrationNumber,
+                    VehicleTypeId = vehicleFormViewModel.VehicleType
+                };
+                string jsonString = JsonSerializer.Serialize(_vechicle);
+                using (var client = new HttpClient())
                 {
-                    if (!VehicleExists(vehicle.Id))
+                    var httpContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
+                    HttpResponseMessage response = await client.PutAsync(uriString, httpContent);
+                    if (response.StatusCode != HttpStatusCode.OK)
                     {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
+                        ViewBag.Error = "Error : " + response.StatusCode;
+                        return View(vehicleFormViewModel);
                     }
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(vehicle);
+            return View(vehicleFormViewModel);
         }
 
         // GET: Vehicles/Delete/5
@@ -124,8 +275,19 @@ namespace TritonExpress.Controllers
                 return NotFound();
             }
 
-            var vehicle = await _context.Vechicles
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var uriString = string.Format("{0}{1}{2}", configuration["TritonExpressEndopint"], "Vehicles/", id);
+            var vehicle = new Vehicle();
+            using (var client = new HttpClient())
+            {
+
+                HttpResponseMessage response = await client.DeleteAsync(uriString);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    ViewBag.Error = "Error : " + response.StatusCode;
+                    return View();
+                }
+                vehicle = response.Content.ReadAsAsync<Vehicle>().Result;
+            }
             if (vehicle == null)
             {
                 return NotFound();
@@ -139,15 +301,21 @@ namespace TritonExpress.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var vehicle = await _context.Vechicles.FindAsync(id);
-            _context.Vechicles.Remove(vehicle);
-            await _context.SaveChangesAsync();
+            var uriString = string.Format("{0}{1}{2}", configuration["TritonExpressEndopint"], "Vehicles/", id);
+
+            using (var client = new HttpClient())
+            {
+
+                HttpResponseMessage response = await client.DeleteAsync(uriString);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    ViewBag.Error = "Error : " + response.StatusCode;
+                    return View();
+                }
+            }
             return RedirectToAction(nameof(Index));
         }
 
-        private bool VehicleExists(int id)
-        {
-            return _context.Vechicles.Any(e => e.Id == id);
-        }
+       
     }
 }

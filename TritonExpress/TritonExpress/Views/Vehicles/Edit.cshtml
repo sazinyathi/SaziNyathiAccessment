@@ -1,14 +1,23 @@
-﻿@model TritonExpress.Models.Vehicle
+﻿@model TritonExpress.ViewModels.VehicleFormViewModel
 
 @{
     ViewData["Title"] = "Edit";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Edit</h1>
 
-<h4>Vehicle</h4>
+<h4>Edit a Vehicle</h4>
 <hr />
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>@ViewBag.Error</strong>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+}
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Edit">
@@ -40,14 +49,12 @@
                 </label>
             </div>
             <div class="form-group">
-                <label asp-for="BranchesId" class="control-label"></label>
-                <select asp-for="BranchesId" class="form-control" asp-items="ViewBag.BranchesId"></select>
-                <span asp-validation-for="BranchesId" class="text-danger"></span>
+                @Html.LabelFor(m => m.Branch)
+                @Html.DropDownListFor(m => m.Branch, new SelectList(Model.Branches, "Id", "BranchName"), new { @class = "form-control" })
             </div>
             <div class="form-group">
-                <label asp-for="VehicleTypeId" class="control-label"></label>
-                <select asp-for="VehicleTypeId" class="form-control" asp-items="ViewBag.VehicleTypeId"></select>
-                <span asp-validation-for="VehicleTypeId" class="text-danger"></span>
+                @Html.LabelFor(m => m.VehicleType)
+                @Html.DropDownListFor(m => m.VehicleType, new SelectList(Model.VehicleTypes, "Id", "Name"), new { @class = "form-control" })
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

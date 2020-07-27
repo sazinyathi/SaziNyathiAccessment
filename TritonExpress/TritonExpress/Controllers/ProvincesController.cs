@@ -17,7 +17,7 @@ namespace TritonExpress.Controllers
        
         private readonly IConfiguration configuration;
         private IEnumerable<Province> provinces = null;
-        public ProvincesController( IConfiguration configuration)
+        public ProvincesController(IConfiguration configuration)
         {
             this.configuration = configuration;
         }
@@ -147,7 +147,7 @@ namespace TritonExpress.Controllers
 
             if (ModelState.IsValid)
             {
-              
+
                     var uriString = string.Format("{0}{1}{2}", configuration["TritonExpressEndopint"], "Provinces/", id);
                     string jsonString = JsonSerializer.Serialize(province);
                     using (var client = new HttpClient())

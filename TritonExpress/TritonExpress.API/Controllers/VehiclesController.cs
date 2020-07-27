@@ -54,7 +54,7 @@ namespace TritonExpress.API.Controllers
             }
 
             var _id = await vehicleService.CreateVehicleAsync(vehicle);
-            return CreatedAtAction("GetVehicle", new { id = _id }, vehicle);
+            return Ok();
         }
 
         // PUT: api/Vehicles/5
