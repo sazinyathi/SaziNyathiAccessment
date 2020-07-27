@@ -7,13 +7,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TritonExpress", "TritonExpr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TritonExpress.Models", "TritonExpress.Models\TritonExpress.Models.csproj", "{5300F009-9411-43BF-A879-4BCE7F5C0548}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TritonExpress.Interfaces", "TritonExpress.Interfaces\TritonExpress.Interfaces.csproj", "{245B14DF-C91F-4D73-9C14-230F610C2180}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TritonExpress.Interfaces", "TritonExpress.Interfaces\TritonExpress.Interfaces.csproj", "{245B14DF-C91F-4D73-9C14-230F610C2180}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TritonExpress.Repositories", "TritonExpress.Repositories\TritonExpress.Repositories.csproj", "{DC3E0BD4-EA29-440C-A606-1B498919C218}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TritonExpress.Repositories", "TritonExpress.Repositories\TritonExpress.Repositories.csproj", "{DC3E0BD4-EA29-440C-A606-1B498919C218}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TritonExpress.Services", "TritonExpress.Services\TritonExpress.Services.csproj", "{963B1FF2-0705-4ED6-B8EB-BFAA22961AA2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TritonExpress.Services", "TritonExpress.Services\TritonExpress.Services.csproj", "{963B1FF2-0705-4ED6-B8EB-BFAA22961AA2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TritonExpress.API", "TritonExpress.API\TritonExpress.API.csproj", "{6228B4F5-CDA8-4C79-83B5-7E055A1288BC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TritonExpress.API", "TritonExpress.API\TritonExpress.API.csproj", "{6228B4F5-CDA8-4C79-83B5-7E055A1288BC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

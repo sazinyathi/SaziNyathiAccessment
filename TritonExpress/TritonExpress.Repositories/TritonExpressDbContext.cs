@@ -1,7 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using TritonExpress.Models;
 
 namespace TritonExpress.Repositories
@@ -43,7 +40,6 @@ namespace TritonExpress.Repositories
         public DbSet<Province> Provinces { get; set; }
         public DbSet<Vehicle> Vechicles { get; set; }
         public DbSet<VehicleType> VehicleType { get; set; }
-        public DbSet<Parcel> Parcels { get; set; }
         public DbSet<Status> Statuses { get; set; }
         public DbSet<WayBills> WayBills { get; set; }
     }

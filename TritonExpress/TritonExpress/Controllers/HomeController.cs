@@ -20,7 +20,7 @@ namespace TritonExpress.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            return RedirectToAction("Index", "WayBills");
         }
 
         public IActionResult Privacy()
