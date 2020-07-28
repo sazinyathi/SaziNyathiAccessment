@@ -15,7 +15,7 @@ namespace TritonExpress.Controllers
 {
     public class BranchesController : Controller
     {
-       
+
         private IEnumerable<Branches> branches = null;
         private IEnumerable<Province> provinces = null;
         private readonly IConfiguration configuration;
@@ -29,7 +29,7 @@ namespace TritonExpress.Controllers
         public async Task<IActionResult> Index(string searchString)
         {
             var uriString = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Branches");
-            
+
             using (var client = new HttpClient())
             {
                 HttpResponseMessage response = await client.GetAsync(uriString);
@@ -38,7 +38,7 @@ namespace TritonExpress.Controllers
                     return View();
                 }
                 branches = response.Content.ReadAsAsync<IList<Branches>>().Result;
-             
+
                 if (!String.IsNullOrEmpty(searchString))
                 {
                     branches = branches.Where(
@@ -49,7 +49,7 @@ namespace TritonExpress.Controllers
                 }
 
             }
-           
+
             return View(branches);
         }
 
@@ -93,13 +93,13 @@ namespace TritonExpress.Controllers
                     ViewBag.Error = "Error : " + response.StatusCode;
                     return View();
                 }
-               provinces = response.Content.ReadAsAsync<IList<Province>>().Result;
+                provinces = response.Content.ReadAsAsync<IList<Province>>().Result;
             }
             var viewModel = new BranchesFormViewModel
             {
                 Provinces = provinces
             };
-           
+
             return View(viewModel);
         }
 
@@ -110,18 +110,18 @@ namespace TritonExpress.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,BranchName,BranchDescription,Address,IsDeleted,IsActive,Province")] BranchesFormViewModel branchesFormViewModel)
         {
-            
+
             if (ModelState.IsValid)
             {
                 var branches = new Branches
                 {
-                     Address = branchesFormViewModel.Address,
-                     BranchDescription = branchesFormViewModel.BranchDescription,
-                     BranchName = branchesFormViewModel.BranchName,
-                     ProvincesId = branchesFormViewModel.Province,
-                     
+                    Address = branchesFormViewModel.Address,
+                    BranchDescription = branchesFormViewModel.BranchDescription,
+                    BranchName = branchesFormViewModel.BranchName,
+                    ProvincesId = branchesFormViewModel.Province,
+
                 };
-                
+
                 var uriString = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Branches");
                 string jsonString = JsonSerializer.Serialize(branches);
                 using (var client = new HttpClient())
@@ -131,14 +131,38 @@ namespace TritonExpress.Controllers
                     if (response.StatusCode != HttpStatusCode.OK)
                     {
                         ViewBag.Error = "Error : " + response.StatusCode;
-                        return View();
                     }
-                    
-                    return RedirectToAction(nameof(Index));
+                    var uriProvinces = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Provinces");
+                    HttpResponseMessage responseProvinces = await client.GetAsync(uriProvinces);
+                    provinces = responseProvinces.Content.ReadAsAsync<IList<Province>>().Result;
+
+                    var branchesFormViewModels = new BranchesFormViewModel
+                    {
+                        Provinces = provinces
+                    };
+                    return View(branchesFormViewModels);
                 }
 
             }
-            return View(branchesFormViewModel);
+            using (var client = new HttpClient())
+            {
+                var uriProvinces = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Provinces");
+                HttpResponseMessage response = await client.GetAsync(uriProvinces);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    ViewBag.Error = "Error : " + response.StatusCode;
+                }
+
+                HttpResponseMessage responseProvinces = await client.GetAsync(uriProvinces);
+                provinces = responseProvinces.Content.ReadAsAsync<IList<Province>>().Result;
+
+                var branchesFormViewModels = new BranchesFormViewModel
+                {
+                    Provinces = provinces
+                };
+                return View(branchesFormViewModels);
+            }
+           
         }
 
         // GET: Branches/Edit/5
@@ -201,30 +225,30 @@ namespace TritonExpress.Controllers
 
             if (ModelState.IsValid)
             {
-              
-                    var branch = new Branches
-                    {
-                      Address = branchesFormViewModel.Address,
-                      BranchName  = branchesFormViewModel.BranchName,
-                      BranchDescription = branchesFormViewModel.BranchDescription,
-                      ProvincesId = branchesFormViewModel.Province,
-                      IsActive = branchesFormViewModel.IsActive,
-                      IsDeleted = branchesFormViewModel.IsDeleted
-                    };
 
-                    var uriString = string.Format("{0}{1}{2}", configuration["TritonExpressEndopint"], "Branches/", id);
-                    string jsonString = JsonSerializer.Serialize(branch);
-                    using (var client = new HttpClient())
+                var branch = new Branches
+                {
+                    Address = branchesFormViewModel.Address,
+                    BranchName = branchesFormViewModel.BranchName,
+                    BranchDescription = branchesFormViewModel.BranchDescription,
+                    ProvincesId = branchesFormViewModel.Province,
+                    IsActive = branchesFormViewModel.IsActive,
+                    IsDeleted = branchesFormViewModel.IsDeleted
+                };
+
+                var uriString = string.Format("{0}{1}{2}", configuration["TritonExpressEndopint"], "Branches/", id);
+                string jsonString = JsonSerializer.Serialize(branch);
+                using (var client = new HttpClient())
+                {
+                    var httpContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
+                    HttpResponseMessage response = await client.PutAsync(uriString, httpContent);
+                    if (response.StatusCode != HttpStatusCode.OK)
                     {
-                        var httpContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
-                        HttpResponseMessage response = await client.PutAsync(uriString, httpContent);
-                        if (response.StatusCode != HttpStatusCode.OK)
-                        {
-                            ViewBag.Error = "Error : " + response.StatusCode;
-                            return View();
-                        }
+                        ViewBag.Error = "Error : " + response.StatusCode;
+                        return View();
                     }
-              
+                }
+
                 return RedirectToAction(nameof(Index));
             }
             return View(branchesFormViewModel);
@@ -265,7 +289,7 @@ namespace TritonExpress.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var uriString = string.Format("{0}{1}{2}", configuration["TritonExpressEndopint"], "Branches/", id);
-           
+
             using (var client = new HttpClient())
             {
 
