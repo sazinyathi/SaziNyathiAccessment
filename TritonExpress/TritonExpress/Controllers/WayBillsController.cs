@@ -136,7 +136,7 @@ namespace TritonExpress.Controllers
                 HttpResponseMessage response = await client.PostAsync(uriString, httpContent);
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
-                    ViewBag.Error = "Error : " + response.StatusCode;
+                    ViewBag.Error = "Error :"+ response.StatusCode+ " Please ensure that the Vechicle Dropdown List is Populated - To Add Vechicle use Admin Tools " + response.StatusCode;
                      var uriStatus = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Status");
                      HttpResponseMessage response1 = await client.GetAsync(uriStatus);
                         

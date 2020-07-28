@@ -15,10 +15,10 @@ namespace TritonExpress.Repositories
             //Province
             modelBuilder.Entity<Province>()
                         .HasData(
-                         new Province { Id = 1,  Name = "Eastern Cape",Description= "ZA-EC" },
-                         new Province { Id = 2,  Name = "Free State", Description = "ZA-FS" },
-                         new Province { Id = 3,  Name = "Gauteng", Description = "ZA-GT" },
-                         new Province { Id = 4,  Name = "Kwazulu Natal", Description = "ZA-KZN" }
+                         new Province { Id = 1,  Name = "Eastern Cape",Description= "Eastern Cape Branch" },
+                         new Province { Id = 2,  Name = "Free State", Description = "Free State Branch" },
+                         new Province { Id = 3,  Name = "Gauteng", Description = "Gauteng Branch" },
+                         new Province { Id = 4,  Name = "Kwazulu Natal", Description = "Gauteng Branch" }
                          );
             //VehicleType
             modelBuilder.Entity<VehicleType>()
@@ -31,7 +31,7 @@ namespace TritonExpress.Repositories
             modelBuilder.Entity<Status>()
               .HasData(
                new Status { Id = 1, Name = "Pending", Description = "Awaiting to be Approved" },
-               new Status { Id = 2, Name = "Disptached", Description = "The Parcel has been dispatched" }
+               new Status { Id = 2, Name = "Dispatched", Description = "The Parcel has been dispatched" }
 
                );
 

@@ -149,8 +149,25 @@ namespace TritonExpress.Controllers
                     HttpResponseMessage response = await client.PostAsync(uriString, httpContent);
                     if (response.StatusCode != HttpStatusCode.OK)
                     {
-                        ViewBag.Error = "Error : " + response.StatusCode;
-                        return View(vehicleFormViewModel);
+                        ViewBag.Error = "Error :" + response.StatusCode+  " Please ensure that the Braches Dropdown List is Populated - To Add Braches use Admin Tools " + response.StatusCode;
+                        var uriStringBranches = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Branches");
+                            HttpResponseMessage responseBranches = await client.GetAsync(uriStringBranches);
+                            branches = responseBranches.Content.ReadAsAsync<IList<Branches>>().Result;
+                        var _vehicleTypes = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "VehicleTypes");
+
+                        
+                            HttpResponseMessage responseVehicleTypes = await client.GetAsync(_vehicleTypes);
+                            
+                            vehicleTypes = responseVehicleTypes.Content.ReadAsAsync<IList<VehicleType>>().Result;
+                        
+                        var _vehicleFormViewModel = new VehicleFormViewModel
+                        {
+
+                            Branches = branches,
+                            VehicleTypes = vehicleTypes
+
+                        };
+                        return View(_vehicleFormViewModel);
                     }
                     return RedirectToAction(nameof(Index));
                 }
