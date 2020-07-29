@@ -131,18 +131,20 @@ namespace TritonExpress.Controllers
                     if (response.StatusCode != HttpStatusCode.OK)
                     {
                         ViewBag.Error = "Error : " + response.StatusCode;
+                        var uriProvinces = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Provinces");
+                        HttpResponseMessage responseProvinces = await client.GetAsync(uriProvinces);
+                        provinces = responseProvinces.Content.ReadAsAsync<IList<Province>>().Result;
+
+                        var branchesFormViewModels = new BranchesFormViewModel
+                        {
+                            Provinces = provinces
+                        };
+                        return View(branchesFormViewModels);
                     }
-                    var uriProvinces = string.Format("{0}{1}", configuration["TritonExpressEndopint"], "Provinces");
-                    HttpResponseMessage responseProvinces = await client.GetAsync(uriProvinces);
-                    provinces = responseProvinces.Content.ReadAsAsync<IList<Province>>().Result;
 
-                    var branchesFormViewModels = new BranchesFormViewModel
-                    {
-                        Provinces = provinces
-                    };
-                    return View(branchesFormViewModels);
+                    return RedirectToAction(nameof(Index));
                 }
-
+                
             }
             using (var client = new HttpClient())
             {
